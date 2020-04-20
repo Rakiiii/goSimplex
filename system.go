@@ -5,35 +5,44 @@ import(
 	"bufio"
 	"os"
 	"strconv"
-	"io"
+	"errors"
+)
+
+var (
+	CofsError = errors.New("Wrong amount of cofs in restriction")
 )
 
 type System struct{
 	optimisationFunction LinearFunction
-	restrictions []LinearRestriction
+	//restrictions []LinearRestriction
+	restrictions LinearRestrictions
 }
 
 func NewSystem()System{
 	return System{optimisationFunction:NewLinearFunction(),restrictions:nil}
 }
 
-func (s *System)Init(f LinearFunction, r []LinearRestriction){
+func (s *System)Init(f LinearFunction, r []LinearRestriction)error{
+	for _,lr := range r{
+		if lr.AmountOfCofs() != f.AmountOfCofs(){
+			return errors.New("Wrong amount of cofs in restriction")
+		}
+	}
 	s.optimisationFunction = f.Copy()
 	s.restrictions = make([]LinearRestriction,len(r))
 	for num,res := range r{
 		s.restrictions[num] = res.Copy()
 	}
+	return nil
 }
 
 func (s *System)ReadSystemFromConsole(){
-	s.ReadSystemFromBuffer(os.Stdin)
+	s.ReadSystemFromBuffer(bufio.NewReader(os.Stdin))
 }
 
-func (s *System)ReadSystemFromBuffer(buf io.Reader){
+func (s *System)ReadSystemFromBuffer(consoleReader *bufio.Reader){
 
-	s.optimisationFunction.ReadFunctionFromBuffer(buf)
-
-	consoleReader := bufio.NewReader(buf)
+	s.optimisationFunction.ReadFunctionFromBuffer(consoleReader)
 
 	var amountOfRestrictions int
 	
@@ -65,7 +74,7 @@ func (s *System)ReadSystemFromBuffer(buf io.Reader){
 
 	for num := 0 ; num < amountOfRestrictions; num ++{
 		fmt.Println("Инициализация ",num+1,"-ого ограничения")
-		s.restrictions[num].ReadRestrictionFromBuffer(s.optimisationFunction.AmountOfCofs(),buf)
+		s.restrictions[num].ReadRestrictionFromBuffer(s.optimisationFunction.AmountOfCofs(),consoleReader)
 	}
 }
 
@@ -79,14 +88,30 @@ func (s *System)AmountOfRestrictions()int{
 	return len(s.restrictions)
 }
 
-func (s *System)Function()LinearFunction{
-	return s.optimisationFunction
+func (s *System)Function()*LinearFunction{
+	return &s.optimisationFunction
 }
 
-func (s *System)Restriction(i int)LinearRestriction{
+func (s *System)Restriction(i int)*LinearRestriction{
 	if i > len(s.restrictions){
-		return NewLinearRestriction()
+		return nil
 	}else{
-		return s.restrictions[i]
+		return &s.restrictions[i]
 	}
+}
+
+func (s *System)Restrict()GenerializedRestrictioner{
+	return s.restrictions.Copy()
+}
+
+func (s *System)Func()GenerializedFunctioner{
+	return &(s.optimisationFunction)
+}
+
+func (s *System)Size() int{
+	return s.optimisationFunction.AmountOfCofs()
+}
+
+func (s *System)IsMin()bool{
+	return s.optimisationFunction.IsMin()
 }
