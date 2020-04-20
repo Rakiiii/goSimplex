@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"log"
+	"bufio"
 )
 
 func TestNewLinearFunction(t *testing.T){
@@ -168,19 +169,20 @@ func TestCopyLF(t *testing.T){
 	}
 }
 
-func TestCountFunction(t *testing.T){
-	fmt.Println("Start TestCountFunction")
+func TestCountLF(t *testing.T){
+	fmt.Println("Start TestCountLF")
 
 	test := LinearFunction{cofs:[]float64{1.0,2.0,0.0},isMin:true}
 
-	res,err := test.CountFunction([]float64{-2.0,3.0})
+	var vec Vector = []float64{-2.0,3.0}
+	res,err := test.Count(&vec)
 	if err != nil{
 		log.Panic(err)
 	}
 	if res != 4.0{
 		t.Error("Wrong function result:",res," expected:4.0")
 	}else{
-		fmt.Println("TestCountFunction=[ok]")
+		fmt.Println("TestCountLF=[ok]")
 	}
 }
 
@@ -202,7 +204,7 @@ func TestReadFunctionFromBuffer(t *testing.T){
 	}
 
 	test := NewLinearFunction()
-	test.ReadFunctionFromBuffer(file)
+	test.ReadFunctionFromBuffer(bufio.NewReader(file))
 
 	os.Stdout = sub
 
