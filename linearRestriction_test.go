@@ -5,6 +5,7 @@ import (
 	"log"
 	"testing"
 	"os"
+	"bufio"
 )
 
 func TestInitSignum(t *testing.T){
@@ -155,7 +156,7 @@ func TestReadRestrictionFromBuffer(t *testing.T){
 	}
 
 	test := NewLinearRestriction()
-	test.ReadRestrictionFromBuffer(4,file)
+	test.ReadRestrictionFromBuffer(4,bufio.NewReader(file))
 
 	os.Stdout = sub
 
