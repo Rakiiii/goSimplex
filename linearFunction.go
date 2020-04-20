@@ -20,10 +20,11 @@ var (
 type LinearFunction struct{
 	cofs []float64
 	isMin bool
+	counted int
 }
 
 func NewLinearFunction()LinearFunction{
-	return LinearFunction{cofs:nil,isMin:false}
+	return LinearFunction{cofs:nil,isMin:false,counted:0,}
 }
 
 func (l *LinearFunction)Init(c []float64, s bool){
@@ -33,13 +34,11 @@ func (l *LinearFunction)Init(c []float64, s bool){
 }
 
 func (l *LinearFunction)ReadFunctionFromConsole(){
-	l.ReadFunctionFromBuffer(os.Stdin)
+	l.ReadFunctionFromBuffer(bufio.NewReader(os.Stdin))
 }
 
-func (l *LinearFunction)ReadFunctionFromBuffer(buf io.Reader){
+func (l *LinearFunction)ReadFunctionFromBuffer(consoleReader *bufio.Reader){
 	initNEXTLINE()
-
-	consoleReader := bufio.NewReader(buf)
 
 	var amountOfCosf int 
 
@@ -150,20 +149,26 @@ func (l *LinearFunction)AmountOfCofs()int{
 	return len(l.cofs)-1
 }
 
+func (l *LinearFunction)CalculationAmount()int{
+	return l.counted
+}
+
 func (l *LinearFunction)IsMin()bool{
 	return l.isMin
 }
 
-func (l *LinearFunction)CountFunction(variabales []float64)(float64,error){
+func (l *LinearFunction)Count(variabales *Vector)(float64,error){
 	switch{
-	case len(variabales) > (len(l.cofs)-1):
+	case len(*variabales) > (len(l.cofs)-1):
 		return 0.0,errors.New("Too many variables for counting function")
-	case len(variabales) < (len(l.cofs)-1):
+	case len(*variabales) < (len(l.cofs)-1):
 		return 0.0,errors.New("Not enough variables for counting function")
 	}
 
+	l.counted++
+
 	result := l.cofs[len(l.cofs)-1]
-	for num,cof := range variabales{
+	for num,cof := range (*variabales){
 		result += cof*l.cofs[num]
 	}
 
